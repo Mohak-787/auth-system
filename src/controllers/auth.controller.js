@@ -51,7 +51,7 @@ export const register = async (req, res) => {
     sessionId: session._id
   }, process.env.JWT_SECRET, { expiresIn: "15m" });
 
-  res.cookie("resfreshToken", refreshToken, {
+  res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "strict",
@@ -110,14 +110,14 @@ export const login = async (req, res) => {
     sessionId: session._id
   }, process.env.JWT_SECRET, { expiresIn: "15m" });
 
-  res.cookie("resfreshToken", refreshToken, {
+  res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000
   });
 
-  res.status(201).json({
+  res.status(200).json({
     message: "User logged in successfully",
     user: userObj,
     accessToken
@@ -137,7 +137,14 @@ export const getUser = async (req, res) => {
     });
   }
 
-  const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    return res.status(401).json({
+      message: "Invalid or expired token"
+    });
+  }
 
   const user = await User.findById(decodedToken.id).select("-password");
 
@@ -160,7 +167,14 @@ export const refreshToken = async (req, res) => {
     });
   }
 
-  const decodedToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
+  } catch {
+    return res.status(401).json({
+      message: "Invalid or expired refresh token"
+    });
+  }
 
   const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest('hex');
 
@@ -250,7 +264,14 @@ export const logoutAll = async (req, res) => {
     });
   }
 
-  const decodedToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
+  } catch {
+    return res.status(401).json({
+      message: "Invalid or expired refresh token"
+    });
+  }
 
   await Session.updateMany({
     user: decodedToken.id,
