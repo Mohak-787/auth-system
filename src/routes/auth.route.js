@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, getUser, refreshToken, logout, logoutAll } from "../controllers/auth.controller.js";
+import { register, login, getUser, refreshToken, logout, logoutAll, verifyEmail } from "../controllers/auth.controller.js";
 
 const router = Router();
 
@@ -8,6 +8,9 @@ router.route("/register").post(register);
 
 /* POST /api/auth/login */
 router.route("/login").post(login);
+
+/* GET /api/auth/verify-email */
+router.route("/verify-email").get(verifyEmail);
 
 /* GET /api/auth/get-user */
 router.route("/get-user").get(getUser);
